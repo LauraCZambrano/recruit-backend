@@ -403,7 +403,9 @@ describe('ApplicationController Unit Tests', () => {
             mockSubmitApplication.mockResolvedValueOnce(mockApplication);
 
             req.body = {
-                candidateId: 'candidate-123',
+                firstName: 'John',
+                lastName: 'Doe',
+                email: 'john.doe@example.com',
                 jobPostingId: 'job-456',
                 resumeText: 'My resume content',
             };
@@ -415,7 +417,9 @@ describe('ApplicationController Unit Tests', () => {
             );
 
             expect(mockSubmitApplication).toHaveBeenCalledWith({
-                candidateId: 'candidate-123',
+                firstName: 'John',
+                lastName: 'Doe',
+                email: 'john.doe@example.com',
                 jobPostingId: 'job-456',
                 resumeText: 'My resume content',
             });

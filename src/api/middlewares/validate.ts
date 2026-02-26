@@ -15,7 +15,16 @@ export const validate =
             next();
         } catch (err: any) {
             if (err instanceof ZodError) {
-                logger.error('ERROR 400: Zod Validator');
+                // Log validation errors with context
+                logger.warn(
+                    {
+                        path: req.path,
+                        method: req.method,
+                        params: req.params,
+                        validationErrors: err.errors,
+                    },
+                    'Validation error: Invalid request parameters',
+                );
 
                 return res.status(400).json({
                     status: 'fail',

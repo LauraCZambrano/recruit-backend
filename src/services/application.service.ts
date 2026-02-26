@@ -9,7 +9,9 @@ import { DataSource, Repository } from 'typeorm';
 import { AIService, getAIService } from './ai.service';
 
 export interface SubmitApplicationInput {
-    candidateId: string;
+    firstName: string;
+    lastName: string;
+    email: string;
     jobPostingId: string;
     resumeText: string;
 }
@@ -38,18 +40,29 @@ export class ApplicationService {
      * @throws AppError if Candidate or JobPosting not found
      */
     async submitApplication(data: SubmitApplicationInput): Promise<Application> {
-        const { candidateId, jobPostingId, resumeText } = data;
+        const { firstName, lastName, email, jobPostingId, resumeText } = data;
 
-        // Verify Candidate exists
-        const candidate = await this.candidateRepository.findOne({
-            where: { id: candidateId },
+        // 1. Search if a Candidate already exists with that email
+        let candidate = await this.candidateRepository.findOne({
+            where: { email },
         });
 
-        if (!candidate) {
-            throw new AppError('Candidate not found', 404);
+        // If not found, create one
+        if (candidate) {
+            logger.info({ email, candidateId: candidate.id }, 'Existing candidate found');
+        } else {
+            candidate = this.candidateRepository.create({
+                firstName,
+                lastName,
+                email,
+                experienceYears: 0, // Default value
+                location: 'Remote', // Default value
+            });
+            candidate = await this.candidateRepository.save(candidate);
+            logger.info({ email, candidateId: candidate.id }, 'New candidate created');
         }
 
-        // Verify JobPosting exists
+        // 2. Verify JobPosting exists
         const jobPosting = await this.jobPostingRepository.findOne({
             where: { id: jobPostingId },
         });
@@ -58,13 +71,13 @@ export class ApplicationService {
             throw new AppError('Job posting not found', 404);
         }
 
-        // Execute AI screening
+        // 3. Execute AI screening
         const screeningResult = await this.aiService.screenCandidate(
             resumeText,
             jobPosting.description,
         );
 
-        // Create Application with screening results
+        // 4. Create Application vinculating the candidate and the jobPosting
         const application = this.applicationRepository.create({
             status: ApplicationStatus.NEW,
             aiScore: screeningResult.score,
@@ -78,7 +91,7 @@ export class ApplicationService {
         logger.info(
             {
                 applicationId: savedApplication.id,
-                candidateId,
+                candidateId: candidate.id,
                 jobPostingId,
                 aiScore: screeningResult.score,
             },
@@ -121,6 +134,37 @@ export class ApplicationService {
         );
 
         return updatedApplication;
+    }
+
+    /**
+     * Retrieves all applications for a specific job posting
+     * @param jobPostingId - UUID of the job posting
+     * @returns Array of Applications with related candidate and jobPosting data
+     * @throws AppError(404) if job posting doesn't exist
+     */
+    async getApplicationsByJobPosting(jobPostingId: string): Promise<Application[]> {
+        // Verify job posting exists
+        const jobPosting = await this.jobPostingRepository.findOne({
+            where: { id: jobPostingId },
+        });
+
+        if (!jobPosting) {
+            throw new AppError('Job posting not found', 404);
+        }
+
+        // Query applications with relations
+        const applications = await this.applicationRepository.find({
+            where: { jobPosting: { id: jobPostingId } },
+            relations: ['candidate', 'jobPosting'],
+            order: { createdAt: 'DESC' },
+        });
+
+        logger.info(
+            { jobPostingId, count: applications.length },
+            'Applications retrieved successfully',
+        );
+
+        return applications;
     }
 }
 

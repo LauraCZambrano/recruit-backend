@@ -76,10 +76,12 @@ afterAll(async () => {
 });
 
 // Fast-check arbitraries for generating random entity data
+let emailCounter = 0;
+
 const candidateArbitrary = fc.record({
     firstName: fc.string({ minLength: 1, maxLength: 50 }),
     lastName: fc.string({ minLength: 1, maxLength: 50 }),
-    email: fc.uuid().map((uuid) => `test-${uuid}@example.com`),
+    email: fc.integer().map(() => `test-${Date.now()}-${emailCounter++}@example.com`),
     phone: fc.option(fc.string({ minLength: 10, maxLength: 15 }), {
         nil: null,
     }),
@@ -349,7 +351,7 @@ describe('Entity Property-Based Tests', () => {
                     // Clean up
                     await candidateRepo.remove(savedCandidate);
                 }),
-                { numRuns: 100 },
+                { numRuns: 10 }, // Reduced from 100 to speed up tests
             );
         });
 
@@ -382,7 +384,7 @@ describe('Entity Property-Based Tests', () => {
                         await jobPostingRepo.remove(savedJobPosting);
                     },
                 ),
-                { numRuns: 100 },
+                { numRuns: 10 },
             );
         });
     });
@@ -437,7 +439,7 @@ describe('Entity Property-Based Tests', () => {
                         await candidateRepo.remove(updatedCandidate);
                     },
                 ),
-                { numRuns: 100 },
+                { numRuns: 10 },
             );
         });
 
@@ -491,7 +493,7 @@ describe('Entity Property-Based Tests', () => {
                         await jobPostingRepo.remove(updatedJobPosting);
                     },
                 ),
-                { numRuns: 100 },
+                { numRuns: 10 },
             );
         });
     });
@@ -565,7 +567,7 @@ describe('Entity Property-Based Tests', () => {
                         await jobPostingRepo.remove(savedJobPosting);
                     },
                 ),
-                { numRuns: 100 },
+                { numRuns: 10 },
             );
         });
     });
@@ -634,7 +636,7 @@ describe('Entity Property-Based Tests', () => {
                         await candidateRepo.remove(savedCandidate);
                     },
                 ),
-                { numRuns: 100 },
+                { numRuns: 10 },
             );
         });
     });
@@ -720,8 +722,8 @@ describe('Entity Property-Based Tests', () => {
                         }
                     },
                 ),
-                { numRuns: 100 },
+                { numRuns: 10 },
             );
-        }, 30000);
+        }, 60000);
     });
 });

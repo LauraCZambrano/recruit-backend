@@ -14,16 +14,25 @@ app.disable('x-powered-by');
 try {
     await loaders({ app });
 
-    app.listen(port, () => {
+    const server = app.listen(port, () => {
         logger.info(`
       ######################################
       -  Server listening on port: ${port} -
       ######################################
     `);
-    }).on('error', (err) => {
-        logger.error('ERROR: Error when try to init the server');
+    });
+
+    // Handle server errors
+    server.on('error', (err: NodeJS.ErrnoException) => {
+        if (err.code === 'EADDRINUSE') {
+            logger.error(`ERROR: Port ${port} is already in use`);
+        } else {
+            logger.error('ERROR: Server error occurred');
+            logger.error(err);
+        }
         process.exit(1);
     });
+
 } catch (err) {
     logger.error('ERROR: Failed to start server components');
     logger.error(err);

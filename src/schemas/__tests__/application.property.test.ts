@@ -36,71 +36,48 @@ describe('Application Schema Property-Based Tests', () => {
     // Arbitrary for valid resume text
     const resumeTextArbitrary = fc.string({ minLength: 1, maxLength: 500 });
 
-    // Arbitrary for valid UUID (for the other field)
+    // Arbitrary for valid UUID
     const validUuidArbitrary = fc.uuid();
+    
+    // Arbitrary for valid names
+    const nameArbitrary = fc.string({ minLength: 1, maxLength: 50 }).filter(s => s.trim().length > 0);
+    
+    // Arbitrary for valid email - more restrictive to match Zod validation
+    const emailArbitrary = fc.string({ minLength: 3, maxLength: 50 })
+        .filter(s => {
+            // Must contain @ and have valid format
+            const emailRegex = /^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$/;
+            return emailRegex.test(s);
+        });
+    
+    // Arbitrary for invalid email (string without @)
+    const invalidEmailArbitrary = fc.string().filter(s => !s.includes('@') && s.length > 0);
 
     /**
-     * **Feature: application-submission-flow, Property 1: Validación de formato UUID**
+     * **Feature: application-submission-flow, Property 1: Validación de formato UUID y email**
      * **Validates: Requirements 1.5, 1.6**
      * 
-     * For any string that is not a valid UUID used as candidateId or jobPostingId,
-     * the system must reject the request with a 400 error.
+     * For any string that is not a valid UUID used as jobPostingId,
+     * or invalid email format, the system must reject the request with a 400 error.
      */
-    describe('Property 1: Validación de formato UUID', () => {
-        it('should reject any non-UUID candidateId with validation error', () => {
-            fc.assert(
-                fc.property(
-                    nonUuidArbitrary,
-                    validUuidArbitrary,
-                    resumeTextArbitrary,
-                    (invalidCandidateId, validJobPostingId, resumeText) => {
-                        // Construct request body with invalid candidateId
-                        const requestData = {
-                            body: {
-                                candidateId: invalidCandidateId,
-                                jobPostingId: validJobPostingId,
-                                resumeText: resumeText,
-                            },
-                        };
-
-                        // Attempt to validate - should throw ZodError
-                        expect(() => {
-                            submitApplicationRequestSchema.parse(requestData);
-                        }).toThrow(ZodError);
-
-                        // Verify the error is specifically about candidateId
-                        try {
-                            submitApplicationRequestSchema.parse(requestData);
-                            fail('Expected ZodError to be thrown');
-                        } catch (error) {
-                            expect(error).toBeInstanceOf(ZodError);
-                            const zodError = error as ZodError<any>;
-                            
-                            // Check that the error is related to candidateId
-                            const candidateIdErrors = zodError.issues.filter(
-                                (err: any) => err.path.includes('candidateId')
-                            );
-                            expect(candidateIdErrors.length).toBeGreaterThan(0);
-                        }
-                    },
-                ),
-                { numRuns: 100 },
-            );
-        });
-
+    describe('Property 1: Validación de formato UUID y email', () => {
         it('should reject any non-UUID jobPostingId with validation error', () => {
             fc.assert(
                 fc.property(
-                    validUuidArbitrary,
+                    nameArbitrary,
+                    nameArbitrary,
+                    emailArbitrary,
                     nonUuidArbitrary,
                     resumeTextArbitrary,
-                    (validCandidateId, invalidJobPostingId, resumeText) => {
+                    (firstName, lastName, email, invalidJobPostingId, resumeText) => {
                         // Construct request body with invalid jobPostingId
                         const requestData = {
                             body: {
-                                candidateId: validCandidateId,
+                                firstName,
+                                lastName,
+                                email,
                                 jobPostingId: invalidJobPostingId,
-                                resumeText: resumeText,
+                                resumeText,
                             },
                         };
 
@@ -129,19 +106,23 @@ describe('Application Schema Property-Based Tests', () => {
             );
         });
 
-        it('should reject when both candidateId and jobPostingId are non-UUID strings', () => {
+        it('should reject invalid email format with validation error', () => {
             fc.assert(
                 fc.property(
-                    nonUuidArbitrary,
-                    nonUuidArbitrary,
+                    nameArbitrary,
+                    nameArbitrary,
+                    invalidEmailArbitrary,
+                    validUuidArbitrary,
                     resumeTextArbitrary,
-                    (invalidCandidateId, invalidJobPostingId, resumeText) => {
-                        // Construct request body with both invalid UUIDs
+                    (firstName, lastName, invalidEmail, jobPostingId, resumeText) => {
+                        // Construct request body with invalid email
                         const requestData = {
                             body: {
-                                candidateId: invalidCandidateId,
-                                jobPostingId: invalidJobPostingId,
-                                resumeText: resumeText,
+                                firstName,
+                                lastName,
+                                email: invalidEmail,
+                                jobPostingId,
+                                resumeText,
                             },
                         };
 
@@ -150,7 +131,7 @@ describe('Application Schema Property-Based Tests', () => {
                             submitApplicationRequestSchema.parse(requestData);
                         }).toThrow(ZodError);
 
-                        // Verify the error contains issues for both fields
+                        // Verify the error is specifically about email
                         try {
                             submitApplicationRequestSchema.parse(requestData);
                             fail('Expected ZodError to be thrown');
@@ -158,14 +139,11 @@ describe('Application Schema Property-Based Tests', () => {
                             expect(error).toBeInstanceOf(ZodError);
                             const zodError = error as ZodError<any>;
                             
-                            // Check that errors exist (at least one of the fields should error)
-                            expect(zodError.issues.length).toBeGreaterThan(0);
-                            
-                            // Verify at least one error is about UUID validation
-                            const uuidErrors = zodError.issues.filter(
-                                (err: any) => err.path.includes('candidateId') || err.path.includes('jobPostingId')
+                            // Check that the error is related to email
+                            const emailErrors = zodError.issues.filter(
+                                (err: any) => err.path.includes('email')
                             );
-                            expect(uuidErrors.length).toBeGreaterThan(0);
+                            expect(emailErrors.length).toBeGreaterThan(0);
                         }
                     },
                 ),
@@ -173,19 +151,48 @@ describe('Application Schema Property-Based Tests', () => {
             );
         });
 
-        it('should accept valid UUIDs for both candidateId and jobPostingId', () => {
+        it('should reject when required fields are missing', () => {
             fc.assert(
                 fc.property(
-                    validUuidArbitrary,
+                    fc.oneof(
+                        fc.constant({}),
+                        fc.constant({ firstName: 'John' }),
+                        fc.constant({ firstName: 'John', lastName: 'Doe' }),
+                        fc.constant({ firstName: 'John', lastName: 'Doe', email: 'john@example.com' }),
+                    ),
+                    (incompleteBody) => {
+                        // Construct request with incomplete body
+                        const requestData = {
+                            body: incompleteBody,
+                        };
+
+                        // Attempt to validate - should throw ZodError
+                        expect(() => {
+                            submitApplicationRequestSchema.parse(requestData);
+                        }).toThrow(ZodError);
+                    },
+                ),
+                { numRuns: 100 },
+            );
+        });
+
+        it('should accept valid data with all required fields', () => {
+            fc.assert(
+                fc.property(
+                    nameArbitrary,
+                    nameArbitrary,
+                    emailArbitrary,
                     validUuidArbitrary,
                     resumeTextArbitrary,
-                    (validCandidateId, validJobPostingId, resumeText) => {
-                        // Construct request body with valid UUIDs
+                    (firstName, lastName, email, jobPostingId, resumeText) => {
+                        // Construct request body with valid data
                         const requestData = {
                             body: {
-                                candidateId: validCandidateId,
-                                jobPostingId: validJobPostingId,
-                                resumeText: resumeText,
+                                firstName,
+                                lastName,
+                                email,
+                                jobPostingId,
+                                resumeText,
                             },
                         };
 
@@ -196,8 +203,10 @@ describe('Application Schema Property-Based Tests', () => {
 
                         // Verify the parsed data matches input
                         const parsed = submitApplicationRequestSchema.parse(requestData);
-                        expect(parsed.body.candidateId).toBe(validCandidateId);
-                        expect(parsed.body.jobPostingId).toBe(validJobPostingId);
+                        expect(parsed.body.firstName).toBe(firstName);
+                        expect(parsed.body.lastName).toBe(lastName);
+                        expect(parsed.body.email).toBe(email);
+                        expect(parsed.body.jobPostingId).toBe(jobPostingId);
                         expect(parsed.body.resumeText).toBe(resumeText);
                     },
                 ),

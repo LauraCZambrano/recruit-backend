@@ -20,11 +20,13 @@ export class ApplicationController {
         next: NextFunction,
     ): Promise<void> {
         try {
-            const { candidateId, jobPostingId, resumeText } = req.body;
+            const { firstName, lastName, email, jobPostingId, resumeText } = req.body;
 
             const applicationService = getApplicationService();
             const application = await applicationService.submitApplication({
-                candidateId,
+                firstName,
+                lastName,
+                email,
                 jobPostingId,
                 resumeText,
             });

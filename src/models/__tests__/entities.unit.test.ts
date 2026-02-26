@@ -212,6 +212,9 @@ describe('Entity Unit Tests', () => {
                 });
                 const saved = await jobPostingRepo.save(jobPosting);
                 expect(saved.status).toBe(status);
+                
+                // Clean up after each iteration
+                await jobPostingRepo.remove(saved);
             }
         });
 
@@ -322,6 +325,11 @@ describe('Entity Unit Tests', () => {
                 });
                 const saved = await applicationRepo.save(application);
                 expect(saved.status).toBe(status);
+                
+                // Clean up after each iteration
+                await applicationRepo.remove(saved);
+                await candidateRepo.remove(candidate);
+                await jobPostingRepo.remove(jobPosting);
             }
         });
 
@@ -516,6 +524,11 @@ describe('Entity Unit Tests', () => {
                 expect(saved.type).toBe(type);
                 await interviewRepo.remove(saved);
             }
+            
+            // Clean up
+            await applicationRepo.remove(application);
+            await candidateRepo.remove(candidate);
+            await jobPostingRepo.remove(jobPosting);
         });
     });
 
@@ -832,6 +845,12 @@ describe('Entity Unit Tests', () => {
 
                 const saved = await onboardingRepo.save(onboarding);
                 expect(saved.status).toBe(status);
+                
+                // Clean up after each iteration
+                await onboardingRepo.remove(saved);
+                await applicationRepo.remove(application);
+                await candidateRepo.remove(candidate);
+                await jobPostingRepo.remove(jobPosting);
             }
         });
     });
@@ -977,6 +996,11 @@ describe('Entity Unit Tests', () => {
 
                 const saved = await referralRepo.save(referral);
                 expect(saved.status).toBe(status);
+                
+                // Clean up after each iteration
+                await referralRepo.remove(saved);
+                await candidateRepo.remove(candidate);
+                await jobPostingRepo.remove(jobPosting);
             }
         });
     });
@@ -1044,6 +1068,10 @@ describe('Entity Unit Tests', () => {
 
                 const saved = await requisitionRepo.save(requisition);
                 expect(saved.status).toBe(status);
+                
+                // Clean up after each iteration
+                await requisitionRepo.remove(saved);
+                await jobPostingRepo.remove(jobPosting);
             }
         });
 
