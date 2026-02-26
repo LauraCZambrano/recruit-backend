@@ -11,6 +11,22 @@ export class JobPostingService {
     private readonly jobPostingRepository = AppDataSource.getRepository(JobPosting);
 
     /**
+     * Retrieves all job postings with id, title, and department fields
+     */
+    async getAllJobPostings(): Promise<JobPosting[]> {
+        try {
+            const jobPostings = await this.jobPostingRepository.find({
+                select: ['id', 'title', 'department'],
+            });
+
+            return jobPostings;
+        } catch (error) {
+            logger.error({ error }, 'Error retrieving job postings');
+            throw new AppError('Failed to retrieve job postings', 500);
+        }
+    }
+
+    /**
      * Creates a new job posting
      */
     async createJobPosting(data: {

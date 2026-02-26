@@ -1,7 +1,7 @@
 import { object, string, number, array, z } from 'zod';
 
 /**
- * Schema para validar la respuesta de Anthropic API
+ * Schema para validar la respuesta
  * Contiene el resultado del análisis de screening de un candidato
  */
 export const screeningResultSchema = object({

@@ -12,10 +12,7 @@ export const submitApplicationRequestSchema = object({
             .min(1, 'email is required')
             .pipe(z.email('email must be a valid email address')),
         jobPostingId: z.uuid({ message: 'jobPostingId must be a valid UUID' }),
-        resumeText: string({ message: 'resumeText is required' }).min(
-            1,
-            'resumeText is required',
-        ),
+        resumeText: string().optional(),
     }),
 });
 

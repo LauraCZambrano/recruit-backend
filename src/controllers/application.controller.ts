@@ -43,6 +43,7 @@ export class ApplicationController {
                 aiSummary: application.aiSummary,
                 candidateId: application.candidate.id,
                 jobPostingId: application.jobPosting.id,
+                resumeText: application.resumeText,
                 createdAt: application.createdAt,
             });
         } catch (error) {

@@ -21,7 +21,7 @@ export const validate =
                         path: req.path,
                         method: req.method,
                         params: req.params,
-                        validationErrors: err.errors,
+                        validationErrors: err.issues,
                     },
                     'Validation error: Invalid request parameters',
                 );

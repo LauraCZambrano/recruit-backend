@@ -31,6 +31,9 @@ export class Application {
     @Column({ type: 'text', nullable: true })
     aiSummary: string | null;
 
+    @Column({ type: 'text', nullable: true })
+    resumeText: string | null;
+
     @ManyToOne(() => Candidate, { onDelete: 'CASCADE', nullable: false })
     @JoinColumn()
     candidate: Candidate;

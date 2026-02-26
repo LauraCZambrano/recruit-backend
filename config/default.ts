@@ -22,12 +22,4 @@ export default {
     api: {
         prefix: process.env.API_PREFIX,
     },
-    anthropic: {
-        apiKey: process.env.ANTHROPIC_API_KEY,
-        model: process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-20250514',
-        maxTokens: Number.parseInt(
-            process.env.ANTHROPIC_MAX_TOKENS ?? '1024',
-            10,
-        ),
-    },
 };

@@ -41,6 +41,33 @@ export class JobPostingController {
     }
 
     /**
+     * Handles GET /job-postings request to retrieve all job postings
+     * Returns list of job postings with id, title, and department fields
+     */
+    async listJobPostings(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> {
+        try {
+            const jobPostingService = getJobPostingService();
+            const jobPostings = await jobPostingService.getAllJobPostings();
+
+            logger.info(
+                { count: jobPostings.length },
+                'Job postings retrieved successfully',
+            );
+
+            res.status(200).json({
+                success: true,
+                data: jobPostings,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    /**
      * Handles GET /job-postings/:id/applications request to retrieve all applications for a job posting
      * Validates job posting ID, invokes service layer, and returns applications with candidate data
      */
@@ -62,6 +89,7 @@ export class JobPostingController {
                 candidateEmail: application.candidate.email,
                 aiScore: application.aiScore,
                 status: application.status,
+                resumeText: application.resumeText,
             }));
 
             logger.info(

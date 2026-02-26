@@ -7,6 +7,12 @@ const jobPostingRoutes = () => {
     const router = Router();
     const jobPostingController = getJobPostingController();
 
+    // GET /api/job-postings - List all job postings
+    router.get(
+        '/',
+        jobPostingController.listJobPostings.bind(jobPostingController),
+    );
+
     // POST /api/job-postings - Create a new job posting
     router.post(
         '/',

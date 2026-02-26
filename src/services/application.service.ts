@@ -82,6 +82,7 @@ export class ApplicationService {
             status: ApplicationStatus.NEW,
             aiScore: screeningResult.score,
             aiSummary: screeningResult.summary,
+            resumeText,
             candidate,
             jobPosting,
         });
