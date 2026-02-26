@@ -1,9 +1,9 @@
 import { Router } from 'express';
 
 const index = () => {
-	const app = Router();
+    const app = Router();
 
-	return app
+    return app;
 };
 
 export default index;

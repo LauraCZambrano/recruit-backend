@@ -44,9 +44,9 @@ npm run test:coverage
 ## Test Structure
 
 - **entities.properties.test.ts**: Property-based tests for entity behavior
-  - Audit column tests (createdAt, updatedAt)
-  - Cascade delete tests
-  - Relationship integrity tests
+    - Audit column tests (createdAt, updatedAt)
+    - Cascade delete tests
+    - Relationship integrity tests
 
 ## Property-Based Testing
 
@@ -65,6 +65,7 @@ Property-based tests use `fast-check` to generate random test data and verify th
 ### Database Connection Errors
 
 If you see authentication errors:
+
 1. Verify PostgreSQL is running
 2. Check database credentials in `.env`
 3. Ensure test database exists
@@ -73,6 +74,7 @@ If you see authentication errors:
 ### Entity Not Found Errors
 
 If entities are not being loaded:
+
 1. Ensure all entity files end with `.entity.ts`
 2. Check that entities are in `src/models/` directory
 3. Verify TypeScript decorators are enabled in `tsconfig.json`

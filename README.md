@@ -12,6 +12,7 @@ This repository requires some knowledge of:
 ```bash
 npm i
 ```
+
 or
 
 ```bash
@@ -27,6 +28,7 @@ Remember to configure your env vars
 ```bash
 npm run dev
 ```
+
 or
 
 ```bash

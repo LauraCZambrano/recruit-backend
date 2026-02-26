@@ -36,9 +36,7 @@ const options: DataSourceOptions = {
     username: dbConfig.user,
     password: dbConfig.pass,
     database: dbConfig.name,
-    entities: [
-        path.join(__dirname, '..', 'models', '**', '*.entity{.ts,.js}'),
-    ],
+    entities: [path.join(__dirname, '..', 'models', '**', '*.entity{.ts,.js}')],
     synchronize: true, // synchronizes the database with the entities if there are changes
     logging: false, // displays queries in the console
     ...sslConfig,

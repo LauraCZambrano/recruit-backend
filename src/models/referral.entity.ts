@@ -1,11 +1,11 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne,
-  JoinColumn
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    CreateDateColumn,
+    UpdateDateColumn,
+    ManyToOne,
+    JoinColumn,
 } from 'typeorm';
 import { ReferralStatus } from './enums.js';
 import { Candidate } from './candidate.entity.js';
@@ -13,30 +13,30 @@ import { JobPosting } from './jobPosting.entity.js';
 
 @Entity()
 export class Referral {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
 
-  @Column({ type: 'uuid', nullable: false })
-  referrerId: string;
+    @Column({ type: 'uuid', nullable: false })
+    referrerId: string;
 
-  @Column({
-    type: 'enum',
-    enum: ReferralStatus,
-    nullable: false
-  })
-  status: ReferralStatus;
+    @Column({
+        type: 'enum',
+        enum: ReferralStatus,
+        nullable: false,
+    })
+    status: ReferralStatus;
 
-  @ManyToOne(() => Candidate, { nullable: false })
-  @JoinColumn()
-  candidate: Candidate;
+    @ManyToOne(() => Candidate, { nullable: false })
+    @JoinColumn()
+    candidate: Candidate;
 
-  @ManyToOne(() => JobPosting, { nullable: false })
-  @JoinColumn()
-  jobPosting: JobPosting;
+    @ManyToOne(() => JobPosting, { nullable: false })
+    @JoinColumn()
+    jobPosting: JobPosting;
 
-  @CreateDateColumn()
-  createdAt: Date;
+    @CreateDateColumn()
+    createdAt: Date;
 
-  @UpdateDateColumn()
-  updatedAt: Date;
+    @UpdateDateColumn()
+    updatedAt: Date;
 }

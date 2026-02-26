@@ -2,24 +2,32 @@ import dotenv from 'dotenv';
 
 const envFound = dotenv.config();
 if (envFound.error) {
-  // This error should crash whole process
+    // This error should crash whole process
 
-  throw new Error("-- .env file not found --");
+    throw new Error('-- .env file not found --');
 }
 
 export default {
-  port: Number.parseInt(process.env.PORT ?? "8000", 10),
-  origin: process.env.ORIGIN,
-  node_env: process.env.NODE_ENV,
-  dbConfig: {
-    db: process.env.DB_TYPE,
-    user: process.env.DB_USERNAME,
-    pass: process.env.DB_PASSWORD,
-    name: process.env.DB_NAME,
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-  },
-  api: {
-    prefix: process.env.API_PREFIX,
-  },
+    port: Number.parseInt(process.env.PORT ?? '8000', 10),
+    origin: process.env.ORIGIN,
+    node_env: process.env.NODE_ENV,
+    dbConfig: {
+        db: process.env.DB_TYPE,
+        user: process.env.DB_USERNAME,
+        pass: process.env.DB_PASSWORD,
+        name: process.env.DB_NAME,
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT,
+    },
+    api: {
+        prefix: process.env.API_PREFIX,
+    },
+    anthropic: {
+        apiKey: process.env.ANTHROPIC_API_KEY,
+        model: process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-20250514',
+        maxTokens: Number.parseInt(
+            process.env.ANTHROPIC_MAX_TOKENS ?? '1024',
+            10,
+        ),
+    },
 };
