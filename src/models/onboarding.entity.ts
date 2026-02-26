@@ -7,8 +7,8 @@ import {
     OneToOne,
     JoinColumn,
 } from 'typeorm';
-import { OnboardingStatus } from './enums.js';
-import { Application } from './application.entity.js';
+import { OnboardingStatus } from './enums';
+import { Application } from './application.entity';
 
 @Entity()
 export class Onboarding {

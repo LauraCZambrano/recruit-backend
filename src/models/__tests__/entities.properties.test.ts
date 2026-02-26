@@ -2,18 +2,18 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as fc from 'fast-check';
-import { Candidate } from '../candidate.entity.js';
-import { JobPosting } from '../jobPosting.entity.js';
-import { Application } from '../application.entity.js';
-import { Interview } from '../interview.entity.js';
-import { Evaluation } from '../evaluation.entity.js';
-import { Onboarding } from '../onboarding.entity.js';
+import { Candidate } from '../candidate.entity';
+import { JobPosting } from '../jobPosting.entity';
+import { Application } from '../application.entity';
+import { Interview } from '../interview.entity';
+import { Evaluation } from '../evaluation.entity';
+import { Onboarding } from '../onboarding.entity';
 import {
     JobPostingStatus,
     ApplicationStatus,
     InterviewType,
     OnboardingStatus,
-} from '../enums.js';
+} from '../enums';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

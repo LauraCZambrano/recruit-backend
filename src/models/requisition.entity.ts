@@ -7,8 +7,8 @@ import {
     ManyToOne,
     JoinColumn,
 } from 'typeorm';
-import { RequisitionStatus } from './enums.js';
-import { JobPosting } from './jobPosting.entity.js';
+import { RequisitionStatus } from './enums';
+import { JobPosting } from './jobPosting.entity';
 
 @Entity()
 export class Requisition {

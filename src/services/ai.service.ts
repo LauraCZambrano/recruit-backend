@@ -1,11 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk';
 import config from 'config';
-import logger from '@/utils/pino';
-import AppError from '@/utils/appError';
+import logger from '../utils/pino';
+import AppError from '../utils/appError';
 import {
     screeningResultSchema,
     type ScreeningResult,
-} from '@/schemas/screening';
+} from '../schemas/screening';
 
 /**
  * System prompt for the AI to act as an Expert Technical Recruiter

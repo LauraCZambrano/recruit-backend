@@ -7,7 +7,7 @@ import {
     ManyToOne,
     JoinColumn,
 } from 'typeorm';
-import { Candidate } from './candidate.entity.js';
+import { Candidate } from './candidate.entity';
 
 @Entity()
 export class TalentPool {

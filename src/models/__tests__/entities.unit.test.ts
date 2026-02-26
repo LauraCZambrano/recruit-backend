@@ -1,16 +1,16 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { Candidate } from '../candidate.entity.js';
-import { JobPosting } from '../jobPosting.entity.js';
-import { Application } from '../application.entity.js';
-import { Interview } from '../interview.entity.js';
-import { Evaluation } from '../evaluation.entity.js';
-import { Offer } from '../offer.entity.js';
-import { Onboarding } from '../onboarding.entity.js';
-import { TalentPool } from '../talentPool.entity.js';
-import { Referral } from '../referral.entity.js';
-import { Requisition } from '../requisition.entity.js';
+import { Candidate } from '../candidate.entity';
+import { JobPosting } from '../jobPosting.entity';
+import { Application } from '../application.entity';
+import { Interview } from '../interview.entity';
+import { Evaluation } from '../evaluation.entity';
+import { Offer } from '../offer.entity';
+import { Onboarding } from '../onboarding.entity';
+import { TalentPool } from '../talentPool.entity';
+import { Referral } from '../referral.entity';
+import { Requisition } from '../requisition.entity';
 import {
     JobPostingStatus,
     ApplicationStatus,
@@ -18,7 +18,7 @@ import {
     OnboardingStatus,
     ReferralStatus,
     RequisitionStatus,
-} from '../enums.js';
+} from '../enums';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

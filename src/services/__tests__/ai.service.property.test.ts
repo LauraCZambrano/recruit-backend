@@ -2,7 +2,7 @@ import * as fc from 'fast-check';
 import { jest } from '@jest/globals';
 
 // Mock logger first (before AppError import since AppError uses logger)
-jest.unstable_mockModule('../../utils/pino.js', () => ({
+jest.unstable_mockModule('../../utils/pino', () => ({
     default: {
         info: jest.fn(),
         error: jest.fn(),
@@ -39,8 +39,8 @@ jest.unstable_mockModule('@anthropic-ai/sdk', () => ({
 }));
 
 // Import modules after mocks are set up
-const { default: AppError } = await import('../../utils/appError.js');
-const { AIService } = await import('../ai.service.js');
+const { default: AppError } = await import('../../utils/appError');
+const { AIService } = await import('../ai.service');
 
 // Arbitrary for generating invalid JSON strings (not parseable)
 const invalidJsonArbitrary = fc.oneof(

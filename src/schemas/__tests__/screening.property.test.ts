@@ -1,5 +1,5 @@
 import * as fc from 'fast-check';
-import { screeningResultSchema, ScreeningResult } from '../screening.js';
+import { screeningResultSchema, ScreeningResult } from '../screening';
 
 // Fast-check arbitrary for generating valid ScreeningResult objects
 const screeningResultArbitrary = fc.record({

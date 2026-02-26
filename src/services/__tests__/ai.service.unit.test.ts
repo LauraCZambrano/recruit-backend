@@ -4,7 +4,7 @@ import { jest } from '@jest/globals';
 const mockLoggerInfo = jest.fn();
 const mockLoggerError = jest.fn();
 
-jest.unstable_mockModule('../../utils/pino.js', () => ({
+jest.unstable_mockModule('../../utils/pino', () => ({
     default: {
         info: mockLoggerInfo,
         error: mockLoggerError,
@@ -62,8 +62,8 @@ jest.unstable_mockModule('@anthropic-ai/sdk', () => ({
 }));
 
 // Import modules after mocks are set up
-const { default: AppError } = await import('../../utils/appError.js');
-const { AIService } = await import('../ai.service.js');
+const { default: AppError } = await import('../../utils/appError');
+const { AIService } = await import('../ai.service');
 
 /**
  * Unit Tests for AIService

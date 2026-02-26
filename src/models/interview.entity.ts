@@ -7,8 +7,8 @@ import {
     ManyToOne,
     JoinColumn,
 } from 'typeorm';
-import { InterviewType } from './enums.js';
-import { Application } from './application.entity.js';
+import { InterviewType } from './enums';
+import { Application } from './application.entity';
 
 @Entity()
 export class Interview {

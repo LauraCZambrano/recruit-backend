@@ -6,7 +6,7 @@ import {
     UpdateDateColumn,
     Index,
 } from 'typeorm';
-import { JobPostingStatus } from './enums.js';
+import { JobPostingStatus } from './enums';
 
 @Entity()
 export class JobPosting {

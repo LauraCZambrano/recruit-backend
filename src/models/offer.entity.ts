@@ -7,7 +7,7 @@ import {
     OneToOne,
     JoinColumn,
 } from 'typeorm';
-import { Application } from './application.entity.js';
+import { Application } from './application.entity';
 
 @Entity()
 export class Offer {

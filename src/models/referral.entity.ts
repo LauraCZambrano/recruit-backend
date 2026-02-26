@@ -7,9 +7,9 @@ import {
     ManyToOne,
     JoinColumn,
 } from 'typeorm';
-import { ReferralStatus } from './enums.js';
-import { Candidate } from './candidate.entity.js';
-import { JobPosting } from './jobPosting.entity.js';
+import { ReferralStatus } from './enums';
+import { Candidate } from './candidate.entity';
+import { JobPosting } from './jobPosting.entity';
 
 @Entity()
 export class Referral {
