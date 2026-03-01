@@ -1,0 +1,13 @@
+{
+  "watch": ["src"],
+  "ext": "ts,json",
+  "ignore": ["src/**/*.test.ts", "src/**/*.spec.ts", "node_modules"],
+  "exec": "tsx src/index.ts",
+  "restartable": "rs",
+  "env": {
+    "NODE_ENV": "localhost"
+  },
+  "delay": 1000,
+  "signal": "SIGTERM",
+  "verbose": true
+}

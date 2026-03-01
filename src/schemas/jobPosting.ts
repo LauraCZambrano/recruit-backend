@@ -28,3 +28,20 @@ export const getApplicationsByJobPostingSchema = object({
 });
 
 export type GetApplicationsByJobPostingParams = z.infer<typeof getApplicationsByJobPostingSchema>['params'];
+
+/**
+ * Schema para validar el request de actualización de estado de job posting
+ */
+export const updateJobPostingStatusSchema = object({
+    params: object({
+        id: z.uuid({ message: 'Job posting ID must be a valid UUID' }),
+    }),
+    body: object({
+        status: z.enum([JobPostingStatus.OPEN, JobPostingStatus.CLOSED, JobPostingStatus.DRAFT], {
+            message: 'status must be one of: OPEN, CLOSED, DRAFT',
+        }),
+    }),
+});
+
+export type UpdateJobPostingStatusParams = z.infer<typeof updateJobPostingStatusSchema>['params'];
+export type UpdateJobPostingStatusBody = z.infer<typeof updateJobPostingStatusSchema>['body'];

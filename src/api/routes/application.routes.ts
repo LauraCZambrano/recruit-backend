@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { validate } from '../middlewares/validate';
-import { submitApplicationRequestSchema } from '../../schemas/application';
+import { submitApplicationRequestSchema, updateApplicationStatusSchema } from '../../schemas/application';
 import { getApplicationController } from '../../controllers/application.controller';
 
 const applicationRoutes = () => {
@@ -22,6 +22,24 @@ const applicationRoutes = () => {
         '/',
         validate(submitApplicationRequestSchema),
         applicationController.submitApplication.bind(applicationController),
+    );
+
+    /**
+     * PATCH /applications/:id/status
+     * Update the status of an existing application
+     * 
+     * Request params:
+     * - id: UUID of the application
+     * 
+     * Request body:
+     * - status: ApplicationStatus enum value (NEW, SCREENED, INTERVIEWED, OFFERED, HIRED, REJECTED)
+     * 
+     * Response: 200 with updated application data
+     */
+    app.patch(
+        '/:id/status',
+        validate(updateApplicationStatusSchema),
+        applicationController.updateApplicationStatus.bind(applicationController),
     );
 
     return app;

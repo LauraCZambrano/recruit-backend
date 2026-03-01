@@ -17,6 +17,10 @@ export const screeningResultSchema = object({
     recommendation: z.enum(['PROCEED', 'HOLD', 'REJECT'], {
         error: 'Recommendation must be PROCEED, HOLD, or REJECT',
     }),
+    experienceYears: number({ error: 'Experience years is required' })
+        .int('Experience years must be an integer')
+        .min(0, 'Experience years must be at least 0')
+        .max(50, 'Experience years must be at most 50'),
 });
 
 /**

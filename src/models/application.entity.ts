@@ -11,6 +11,7 @@ import {
 import { ApplicationStatus } from './enums';
 import { Candidate } from './candidate.entity';
 import { JobPosting } from './jobPosting.entity';
+import { ScreeningResult } from '../schemas/screening';
 
 @Entity()
 export class Application {
@@ -30,6 +31,9 @@ export class Application {
 
     @Column({ type: 'text', nullable: true })
     aiSummary: string | null;
+
+    @Column({ type: 'json', nullable: true })
+    aiAnalysis: ScreeningResult | null;
 
     @Column({ type: 'text', nullable: true })
     resumeText: string | null;

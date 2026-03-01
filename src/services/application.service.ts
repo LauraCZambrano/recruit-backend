@@ -35,34 +35,37 @@ export class ApplicationService {
 
     /**
      * Submits a new application with automated AI screening
-     * @param data - Input data containing candidateId, jobPostingId, and resumeText
+     * @param data - Input data containing firstName, lastName, email, jobPostingId, and resumeText
      * @returns Created Application with AI screening results
-     * @throws AppError if Candidate or JobPosting not found
+     * @throws AppError if JobPosting not found
      */
     async submitApplication(data: SubmitApplicationInput): Promise<Application> {
         const { firstName, lastName, email, jobPostingId, resumeText } = data;
 
-        // 1. Search if a Candidate already exists with that email
+        // Step 1: Find or create candidate
         let candidate = await this.candidateRepository.findOne({
             where: { email },
         });
 
-        // If not found, create one
-        if (candidate) {
-            logger.info({ email, candidateId: candidate.id }, 'Existing candidate found');
-        } else {
+        const isNewCandidate = !candidate;
+
+        if (!candidate) {
+            // Create new candidate with default values
             candidate = this.candidateRepository.create({
                 firstName,
                 lastName,
                 email,
-                experienceYears: 0, // Default value
-                location: 'Remote', // Default value
+                experienceYears: 0,
+                skills: [],
+                location: 'Remote',
             });
             candidate = await this.candidateRepository.save(candidate);
             logger.info({ email, candidateId: candidate.id }, 'New candidate created');
+        } else {
+            logger.info({ email, candidateId: candidate.id }, 'Existing candidate found');
         }
 
-        // 2. Verify JobPosting exists
+        // Step 2: Verify JobPosting exists
         const jobPosting = await this.jobPostingRepository.findOne({
             where: { id: jobPostingId },
         });
@@ -71,17 +74,77 @@ export class ApplicationService {
             throw new AppError('Job posting not found', 404);
         }
 
-        // 3. Execute AI screening
-        const screeningResult = await this.aiService.screenCandidate(
-            resumeText,
-            jobPosting.description,
-        );
+        // Step 3: Execute AI screening with fallback on failure
+        let screeningResult;
+        let aiScreeningSucceeded = true;
+        try {
+            screeningResult = await this.aiService.screenCandidate(
+                resumeText,
+                jobPosting.description,
+            );
+        } catch (error) {
+            aiScreeningSucceeded = false;
+            
+            // Create fallback ScreeningResult when AI service fails
+            logger.error(
+                {
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                    stack: error instanceof Error ? error.stack : undefined,
+                    candidateId: candidate.id,
+                    jobPostingId,
+                    isNewCandidate,
+                },
+                'AI screening failed, using fallback result',
+            );
 
-        // 4. Create Application vinculating the candidate and the jobPosting
+            // For new candidates: use fallback values
+            // For existing candidates: preserve their current values
+            screeningResult = {
+                score: 0,
+                summary: 'Error en el análisis de IA',
+                keyMatches: isNewCandidate ? [] : candidate.skills,
+                missingSkills: [],
+                recommendation: 'HOLD' as const,
+                experienceYears: isNewCandidate ? 0 : candidate.experienceYears,
+            };
+        }
+
+        // Step 3.5: Update candidate profile with AI-extracted data
+        // Only update if AI screening succeeded
+        if (aiScreeningSucceeded) {
+            candidate.skills = screeningResult.keyMatches;
+            candidate.experienceYears = screeningResult.experienceYears;
+            await this.candidateRepository.save(candidate);
+        }
+
+        if (aiScreeningSucceeded) {
+            logger.info(
+                {
+                    candidateId: candidate.id,
+                    skillsCount: candidate.skills.length,
+                    experienceYears: candidate.experienceYears,
+                    isNewCandidate,
+                },
+                'Candidate profile updated with AI-extracted data',
+            );
+        } else {
+            logger.info(
+                {
+                    candidateId: candidate.id,
+                    isNewCandidate,
+                    preservedSkillsCount: isNewCandidate ? 0 : candidate.skills.length,
+                    preservedExperienceYears: isNewCandidate ? 0 : candidate.experienceYears,
+                },
+                'Candidate profile preserved due to AI failure',
+            );
+        }
+
+        // Step 4: Create Application linking candidate and jobPosting
         const application = this.applicationRepository.create({
             status: ApplicationStatus.NEW,
             aiScore: screeningResult.score,
             aiSummary: screeningResult.summary,
+            aiAnalysis: screeningResult,
             resumeText,
             candidate,
             jobPosting,
@@ -89,17 +152,28 @@ export class ApplicationService {
 
         const savedApplication = await this.applicationRepository.save(application);
 
+        // Reload the application with all relations to ensure all fields are populated
+        const reloadedApplication = await this.applicationRepository.findOne({
+            where: { id: savedApplication.id },
+            relations: ['candidate', 'jobPosting'],
+        });
+
+        if (!reloadedApplication) {
+            throw new AppError('Failed to reload application after save', 500);
+        }
+
         logger.info(
             {
-                applicationId: savedApplication.id,
+                applicationId: reloadedApplication.id,
                 candidateId: candidate.id,
                 jobPostingId,
                 aiScore: screeningResult.score,
+                isNewCandidate,
             },
             'Application submitted successfully with AI screening',
         );
 
-        return savedApplication;
+        return reloadedApplication;
     }
 
     /**
@@ -143,7 +217,7 @@ export class ApplicationService {
      * @returns Array of Applications with related candidate and jobPosting data
      * @throws AppError(404) if job posting doesn't exist
      */
-    async getApplicationsByJobPosting(jobPostingId: string): Promise<Application[]> {
+    async getApplicationsByJobPosting(jobPostingId: string): Promise<{ jobPosting: any; applications: Application[] }> {
         // Verify job posting exists
         const jobPosting = await this.jobPostingRepository.findOne({
             where: { id: jobPostingId },
@@ -165,7 +239,72 @@ export class ApplicationService {
             'Applications retrieved successfully',
         );
 
-        return applications;
+        return { jobPosting, applications };
+    }
+
+    /**
+     * Updates the status of an application
+     * @param applicationId - UUID of the application
+     * @param status - New ApplicationStatus value
+     * @returns Updated Application
+     * @throws AppError(404) if application not found
+     */
+    async updateApplicationStatus(
+        applicationId: string,
+        status: ApplicationStatus,
+    ): Promise<Application> {
+        const application = await this.applicationRepository.findOne({
+            where: { id: applicationId },
+        });
+
+        if (!application) {
+            throw new AppError('Application not found', 404);
+        }
+
+        const oldStatus = application.status;
+        application.status = status;
+        const updatedApplication = await this.applicationRepository.save(application);
+
+        logger.info(
+            { applicationId, oldStatus, newStatus: status },
+            'Application status updated successfully',
+        );
+
+        return updatedApplication;
+    }
+
+    /**
+     * Retrieves an application by ID with candidate and jobPosting relations
+     * @param applicationId - UUID of the application
+     * @returns Application with candidate and jobPosting populated
+     * @throws AppError(404) if application not found
+     * @throws AppError(400) if resumeText is not available
+     */
+    async getApplicationForQuestions(applicationId: string): Promise<Application> {
+        const application = await this.applicationRepository.findOne({
+            where: { id: applicationId },
+            relations: ['candidate', 'jobPosting'],
+        });
+
+        if (!application) {
+            throw new AppError('Application not found', 404);
+        }
+
+        if (!application.resumeText) {
+            throw new AppError('Resume text not available for this application', 400);
+        }
+
+        logger.info(
+            {
+                applicationId,
+                candidateId: application.candidate.id,
+                jobPostingId: application.jobPosting.id,
+                resumeLength: application.resumeText.length,
+            },
+            'Application retrieved for interview questions generation',
+        );
+
+        return application;
     }
 }
 

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { getJobPostingController } from '../../controllers/jobPosting.controller';
 import { validate } from '../middlewares/validate';
-import { createJobPostingRequestSchema, getApplicationsByJobPostingSchema } from '../../schemas/jobPosting';
+import { createJobPostingRequestSchema, getApplicationsByJobPostingSchema, updateJobPostingStatusSchema } from '../../schemas/jobPosting';
 
 const jobPostingRoutes = () => {
     const router = Router();
@@ -25,6 +25,13 @@ const jobPostingRoutes = () => {
         '/:id/applications',
         validate(getApplicationsByJobPostingSchema),
         jobPostingController.getApplicationsByJobPosting.bind(jobPostingController),
+    );
+
+    // PATCH /api/job-postings/:id/status - Update job posting status
+    router.patch(
+        '/:id/status',
+        validate(updateJobPostingStatusSchema),
+        jobPostingController.updateJobPostingStatus.bind(jobPostingController),
     );
 
     return router;

@@ -7,6 +7,49 @@ import logger from '../utils/pino';
  */
 export class ApplicationController {
     /**
+     * Handles PATCH /applications/:id/status request to update application status
+     * Validates input, invokes service layer, and returns updated application
+     * 
+     * @param req - Express request with validated params (id) and body (status)
+     * @param res - Express response
+     * @param next - Express next function for error handling
+     */
+    async updateApplicationStatus(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> {
+        try {
+            const { id } = req.params;
+            const { status } = req.body;
+
+            const applicationService = getApplicationService();
+            const application = await applicationService.updateApplicationStatus(id, status);
+
+            logger.info(
+                { applicationId: id, newStatus: status },
+                'Application status updated successfully via API',
+            );
+
+            res.status(200).json({
+                success: true,
+                data: {
+                    id: application.id,
+                    status: application.status,
+                    aiScore: application.aiScore,
+                    aiSummary: application.aiSummary,
+                    aiAnalysis: application.aiAnalysis,
+                    resumeText: application.resumeText,
+                    createdAt: application.createdAt,
+                    updatedAt: application.updatedAt,
+                },
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    /**
      * Handles POST /applications request to submit a new application
      * Validates input, invokes service layer, and returns created application
      * 
@@ -37,14 +80,33 @@ export class ApplicationController {
             );
 
             res.status(201).json({
-                id: application.id,
-                status: application.status,
-                aiScore: application.aiScore,
-                aiSummary: application.aiSummary,
-                candidateId: application.candidate.id,
-                jobPostingId: application.jobPosting.id,
-                resumeText: application.resumeText,
-                createdAt: application.createdAt,
+                success: true,
+                data: {
+                    id: application.id,
+                    status: application.status,
+                    aiScore: application.aiScore,
+                    aiSummary: application.aiSummary,
+                    aiAnalysis: application.aiAnalysis,
+                    resumeText: application.resumeText,
+                    candidate: {
+                        id: application.candidate.id,
+                        firstName: application.candidate.firstName,
+                        lastName: application.candidate.lastName,
+                        email: application.candidate.email,
+                        phone: application.candidate.phone,
+                        linkedinUrl: application.candidate.linkedinUrl,
+                        skills: application.candidate.skills,
+                        experienceYears: application.candidate.experienceYears,
+                        location: application.candidate.location,
+                    },
+                    jobPosting: {
+                        id: application.jobPosting.id,
+                        title: application.jobPosting.title,
+                        department: application.jobPosting.department,
+                        location: application.jobPosting.location,
+                    },
+                    createdAt: application.createdAt,
+                },
             });
         } catch (error) {
             next(error);

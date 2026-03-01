@@ -68,6 +68,36 @@ export class JobPostingController {
     }
 
     /**
+     * Handles PATCH /job-postings/:id/status request to update job posting status
+     * Extracts id and status, invokes service layer, and returns updated job posting
+     */
+    async updateJobPostingStatus(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> {
+        try {
+            const id = typeof req.params.id === 'string' ? req.params.id : req.params.id[0];
+            const { status } = req.body;
+
+            const jobPostingService = getJobPostingService();
+            const updatedJobPosting = await jobPostingService.updateJobPostingStatus(id, status);
+
+            logger.info(
+                { jobPostingId: id, status },
+                'Job posting status updated successfully via API',
+            );
+
+            res.status(200).json({
+                success: true,
+                updatedJobPosting,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    /**
      * Handles GET /job-postings/:id/applications request to retrieve all applications for a job posting
      * Validates job posting ID, invokes service layer, and returns applications with candidate data
      */
@@ -80,16 +110,18 @@ export class JobPostingController {
             const id = typeof req.params.id === 'string' ? req.params.id : req.params.id[0];
 
             const applicationService = getApplicationService();
-            const applications = await applicationService.getApplicationsByJobPosting(id);
+            const { jobPosting, applications } = await applicationService.getApplicationsByJobPosting(id);
 
             // Transform Application entities to response DTOs
-            const responseData = applications.map((application) => ({
+            const candidates = applications.map((application) => ({
                 id: application.id,
                 candidateName: `${application.candidate.firstName} ${application.candidate.lastName}`,
                 candidateEmail: application.candidate.email,
                 aiScore: application.aiScore,
+                aiAnalysis: application.aiAnalysis,
                 status: application.status,
                 resumeText: application.resumeText,
+                applicationDate: application.createdAt,
             }));
 
             logger.info(
@@ -99,7 +131,10 @@ export class JobPostingController {
 
             res.status(200).json({
                 success: true,
-                data: responseData,
+                data: {
+                    jobTitle: jobPosting.title,
+                    candidates,
+                },
             });
         } catch (error: any) {
             // Log not found errors at info level
