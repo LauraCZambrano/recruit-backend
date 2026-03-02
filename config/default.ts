@@ -1,11 +1,6 @@
 import dotenv from 'dotenv';
 
-const envFound = dotenv.config();
-if (envFound.error) {
-    // This error should crash whole process
-
-    throw new Error('-- .env file not found --');
-}
+dotenv.config();
 
 export default {
     port: Number.parseInt(process.env.PORT ?? '8000', 10),
